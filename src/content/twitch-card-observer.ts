@@ -1,7 +1,9 @@
 import type { TwitchCardTarget, TwitchHoverSurface } from '../shared/types'
 
 const DIRECTORY_CARD_SELECTOR = 'a[data-a-target="preview-card-image-link"][href^="/"]'
-const SIDE_NAV_CARD_SELECTOR = 'a.side-nav-card__link[href^="/"]'
+const EXPANDED_SIDE_NAV_CARD_SELECTOR = 'a.side-nav-card__link[href^="/"]'
+const COLLAPSED_SIDE_NAV_CARD_SELECTOR = 'a.side-nav-card.tw-link[href^="/"]'
+const SIDE_NAV_CARD_SELECTOR = `${EXPANDED_SIDE_NAV_CARD_SELECTOR}, ${COLLAPSED_SIDE_NAV_CARD_SELECTOR}`
 const CARD_SELECTOR = `${DIRECTORY_CARD_SELECTOR}, ${SIDE_NAV_CARD_SELECTOR}`
 
 interface ObserveTwitchCardsOptions {
@@ -54,7 +56,11 @@ function readTitle(anchor: HTMLAnchorElement, surface: TwitchHoverSurface): stri
 }
 
 function isLiveSideNavCard(anchor: HTMLAnchorElement): boolean {
-  return anchor.querySelector('[data-a-target="side-nav-live-status"]') !== null
+  if (anchor.querySelector('[data-a-target="side-nav-live-status"]') !== null) {
+    return true
+  }
+
+  return anchor.matches(COLLAPSED_SIDE_NAV_CARD_SELECTOR)
 }
 
 export function observeTwitchCards(options: ObserveTwitchCardsOptions): () => void {

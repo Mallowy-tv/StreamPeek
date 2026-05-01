@@ -53,13 +53,13 @@
 
 .streampeek-side-nav-header {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  left: 0.5rem;
+  top: 0;
+  right: 0;
+  left: 0;
   z-index: 3;
   overflow: hidden;
-  border-radius: 0.75rem;
-  background: rgba(241, 245, 249, 0.16);
+  border-radius: 0.9rem 0.9rem 0 0;
+  background: rgba(148, 163, 184, 0.18);
   box-shadow:
     0 10px 24px rgba(2, 6, 23, 0.14),
     inset 0 0 0 1px rgba(255, 255, 255, 0.22);
@@ -69,9 +69,9 @@
 .streampeek-side-nav-title-link {
   display: block;
   overflow: hidden;
-  padding: 0.48rem 0.7rem;
+  padding: 0.68rem 0.9rem 0.74rem;
   color: #f8fafc;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: 0.01em;
   text-decoration: none;
@@ -86,15 +86,14 @@
 }
 
 .streampeek-side-nav-title-marquee {
-  display: inline-flex;
+  display: inline-block;
   width: max-content;
-  min-width: 100%;
+  padding-left: 100%;
   animation: streampeek-side-nav-marquee 12s linear infinite;
 }
 
 .streampeek-side-nav-title-copy {
-  flex: 0 0 auto;
-  padding-right: 1.5rem;
+  display: inline-block;
   white-space: nowrap;
 }
 
@@ -104,7 +103,7 @@
   }
 
   to {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 

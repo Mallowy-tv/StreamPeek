@@ -69,8 +69,20 @@ function buildLoadingState(channel: string): HTMLDivElement {
   return loadingRoot
 }
 
+function readSideNavStreamTitle(): string | null {
+  const tooltipTitle = document
+    .querySelector<HTMLElement>('.online-side-nav-channel-tooltip__body p')
+    ?.textContent
+    ?.trim()
+
+  return tooltipTitle && tooltipTitle.length > 0 ? tooltipTitle : null
+}
+
 function buildSideNavHeader(binding: CardBinding): HTMLDivElement {
-  const title = binding.card.title.trim() || binding.card.channel
+  const title =
+    (binding.card.surface === 'side-nav-card' ? readSideNavStreamTitle() : null) ||
+    binding.card.title.trim() ||
+    binding.card.channel
   const header = document.createElement('div')
   header.className = 'streampeek-side-nav-header'
 
@@ -86,12 +98,7 @@ function buildSideNavHeader(binding: CardBinding): HTMLDivElement {
   const firstCopy = document.createElement('span')
   firstCopy.className = 'streampeek-side-nav-title-copy'
   firstCopy.textContent = title
-
-  const secondCopy = document.createElement('span')
-  secondCopy.className = 'streampeek-side-nav-title-copy'
-  secondCopy.textContent = title
-
-  marquee.append(firstCopy, secondCopy)
+  marquee.append(firstCopy)
   titleLink.append(marquee)
   header.append(titleLink)
 

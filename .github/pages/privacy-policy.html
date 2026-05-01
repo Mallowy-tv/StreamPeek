@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StreamPeek Privacy Policy</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --accent: #8b5cf6;
+        --border: rgba(148, 163, 184, 0.22);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background:
+          radial-gradient(circle at top, rgba(139, 92, 246, 0.18), transparent 30%),
+          linear-gradient(180deg, #020617 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 48px 20px 72px;
+      }
+
+      .card {
+        padding: 32px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: rgba(17, 24, 39, 0.88);
+        box-shadow: 0 24px 60px rgba(2, 6, 23, 0.35);
+      }
+
+      h1,
+      h2 {
+        margin: 0 0 16px;
+        line-height: 1.15;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+      }
+
+      h2 {
+        margin-top: 32px;
+        font-size: 1.15rem;
+      }
+
+      p,
+      li {
+        color: var(--text);
+        line-height: 1.65;
+      }
+
+      p.lead,
+      .muted {
+        color: var(--muted);
+      }
+
+      ul {
+        padding-left: 1.2rem;
+      }
+
+      a {
+        color: #c4b5fd;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 14px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(139, 92, 246, 0.14);
+        color: #ddd6fe;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card">
+        <div class="eyebrow">StreamPeek</div>
+        <h1>Privacy Policy</h1>
+        <p class="lead">Last updated: 2026-05-02</p>
+
+        <p>
+          StreamPeek is a Chrome extension that lets you preview live Twitch channels while you browse.
+          This privacy policy explains what information the extension uses and how that information is handled.
+        </p>
+
+        <h2>What StreamPeek collects</h2>
+        <p>
+          StreamPeek does not collect, store, or sell personal data on its own servers. The extension does not
+          run a backend service for user accounts, analytics profiles, or marketing tracking.
+        </p>
+
+        <h2>What StreamPeek accesses</h2>
+        <ul>
+          <li><strong>Twitch page content:</strong> The extension reads supported Twitch pages so it can detect live channels and render hover previews.</li>
+          <li><strong>Local extension storage:</strong> StreamPeek stores your preview audio preferences, such as mute state and volume level, in your browser.</li>
+          <li><strong>Twitch authentication context:</strong> If you are signed in to Twitch, the extension may use Twitch page authentication data already present in your browser session to request the same preview access Twitch would normally provide in the page experience.</li>
+        </ul>
+
+        <h2>How that information is used</h2>
+        <p>
+          The information above is used only to make the extension work: detecting supported live channels,
+          loading previews, and remembering your audio settings between sessions.
+        </p>
+
+        <h2>What StreamPeek does not do</h2>
+        <ul>
+          <li>It does not create user accounts.</li>
+          <li>It does not upload your browsing activity to a StreamPeek server.</li>
+          <li>It does not sell personal information.</li>
+          <li>It does not use your stored preferences for advertising.</li>
+        </ul>
+
+        <h2>Third-party services</h2>
+        <p>
+          StreamPeek works on Twitch and requests Twitch-hosted media and related Twitch resources needed to show
+          previews. Those requests are subject to Twitch's own policies and infrastructure.
+        </p>
+
+        <h2>Data retention</h2>
+        <p>
+          Any settings saved by StreamPeek remain in your local browser storage until you clear extension data,
+          remove the extension, or change the stored values through normal extension use.
+        </p>
+
+        <h2>Your choices</h2>
+        <p>
+          You can stop all extension access at any time by disabling or uninstalling StreamPeek from Chrome.
+          You can also clear browser extension storage through Chrome's extension management tools.
+        </p>
+
+        <h2>Changes to this policy</h2>
+        <p>
+          This policy may be updated if StreamPeek changes how it handles data or if new extension features require
+          clearer disclosure. The latest version will be published on this page.
+        </p>
+
+        <h2>Contact</h2>
+        <p class="muted">
+          For questions about this privacy policy or the StreamPeek extension, use the contact or support links
+          provided in the repository or Chrome Web Store listing for this project.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -28,5 +28,8 @@ dist-ssr
 # Local project tracking
 todo.md
 .github/**
+.github/pages/**
 !.github/workflows/
 !.github/workflows/**
+!.github/pages/
+!.github/pages/**

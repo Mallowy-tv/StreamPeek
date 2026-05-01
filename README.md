@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# 👀 StreamPeek
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Hover Twitch channels to watch instant live previews without opening the stream.
 
-Currently, two official plugins are available:
+## ✨ Introduction
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+StreamPeek is a Chrome extension for Twitch that lets you preview live channels directly from the page while you browse. Instead of opening multiple streams just to see what is happening, you can hover a live channel and get a lightweight video preview with compact audio controls.
 
-## React Compiler
+StreamPeek currently supports:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Hover previews on Twitch directory cards
+- Hover previews on left-side live channel entries
+- Compact mute and volume controls
+- Remembered volume and mute preferences
+- Click-to-pause and resume preview playback
 
-## Expanding the ESLint configuration
+## 🧩 Install in Chrome
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Download and unzip the StreamPeek extension files.
+2. Open `chrome://extensions` in Chrome.
+3. Turn on **Developer mode** in the top-right corner.
+4. Click **Load unpacked**.
+5. Select the StreamPeek extension folder you downloaded. If your download contains a `dist` folder, select `dist`.
+6. Make sure the StreamPeek toggle is enabled after Chrome loads it.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 👀 How to use StreamPeek
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. Open Twitch in Chrome.
+2. Browse a category page, directory page, or the left sidebar with live channels.
+3. Hover a live stream card or supported live channel entry.
+4. Wait a moment for the preview to load.
+5. Use the speaker control to mute, unmute, or adjust volume.
+6. Click the preview to pause or resume playback.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## ⚡ What to expect
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Previews are designed to start quickly and stay lightweight.
+- Audio settings are remembered between previews.
+- Some previews may start muted first because of Chrome autoplay rules.
+- If a preview cannot be loaded, StreamPeek shows a simple unavailable state instead of opening the full Twitch player.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🔐 Permissions
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+StreamPeek needs access to Twitch pages so it can detect live channels and show previews where you hover them. It also uses local storage to remember your audio settings.
+
+### ❌ The preview does not load
+
+- Refresh the Twitch page once after enabling the extension.
+- Make sure you are on `https://www.twitch.tv/`.
+- Try hovering a live channel instead of an offline one.
+
+### 🔊 Audio does not start right away
+
+Chrome can block autoplay with sound. If that happens, unmute the preview manually once and continue browsing.
+
+### 🧩 The extension does not appear in Chrome
+
+- Confirm **Developer mode** is enabled on `chrome://extensions`.
+- Reload the extension from the extensions page.
+- If you loaded the wrong folder, remove it and load the correct StreamPeek folder again.
+
+## 📄 License
+
+No license has been added to this repository yet.

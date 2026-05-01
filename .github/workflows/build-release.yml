@@ -1,0 +1,76 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests if available
+        run: npm test --if-present
+
+      - name: Build project
+        run: npm run build
+
+      - name: Generate artifact filename
+        run: |
+          BRANCH_NAME=${GITHUB_REF##*/}
+          SHORT_COMMIT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          ARTIFACT_NAME="StreamPeek-v${PACKAGE_VERSION}-${BRANCH_NAME}-${SHORT_COMMIT_SHA}.zip"
+
+          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> "$GITHUB_ENV"
+
+      - name: Create zip archive from dist folder
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "dist folder missing"
+            exit 1
+          fi
+
+          zip -r "$ARTIFACT_NAME" dist
+
+      - name: Delete previous latest release if it exists
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Create or update latest GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: StreamPeek Latest Build
+          body: |
+            Auto-generated StreamPeek build
+
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+          files: ${{ env.ARTIFACT_NAME }}
+          draft: false
+          prerelease: false

@@ -6,7 +6,6 @@ export default defineManifest({
   description: 'Hover Twitch live cards to watch muted stream previews with quick audio controls.',
   version: '0.0.1',
   action: {
-    default_popup: 'popup.html',
     default_title: 'StreamPeek',
   },
   permissions: ['storage'],

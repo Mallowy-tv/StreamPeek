@@ -7,6 +7,7 @@ import type {
 } from '../shared/types'
 
 interface CreatePreviewPlayerOptions {
+  authToken?: string
   channel: string
   title: string
   onFatalError: () => void
@@ -154,6 +155,7 @@ export function createPreviewPlayer(options: CreatePreviewPlayerOptions): Previe
   const message: PreviewFrameInitMessage = {
     type: 'streampeek:init',
     sessionId: frame.sessionId,
+    authToken: options.authToken,
     channel: options.channel,
     title: options.title,
   }

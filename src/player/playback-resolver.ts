@@ -44,6 +44,10 @@ interface ParsedPlaybackToken {
 
 const playbackCache = new Map<string, PlaybackSource>()
 
+interface ResolvePlaybackSourceOptions {
+  authToken?: string
+}
+
 function buildPlaylistUrl(channel: string, token: string, signature: string): string {
   const playlistUrl = new URL(`https://usher.ttvnw.net/api/channel/hls/${channel}.m3u8`)
 
@@ -80,20 +84,29 @@ function readCachedSource(channel: string): PlaybackSource | null {
   return null
 }
 
-export async function resolvePlaybackSource(channel: string): Promise<PlaybackSource> {
+export async function resolvePlaybackSource(
+  channel: string,
+  options: ResolvePlaybackSourceOptions = {},
+): Promise<PlaybackSource> {
   const cachedSource = readCachedSource(channel)
 
   if (cachedSource) {
     return cachedSource
   }
 
+  const headers: HeadersInit = {
+    'Client-ID': TWITCH_CLIENT_ID,
+    'Content-Type': 'application/json',
+  }
+
+  if (options.authToken) {
+    headers.Authorization = `OAuth ${options.authToken}`
+  }
+
   const response = await fetch('https://gql.twitch.tv/gql', {
     method: 'POST',
     credentials: 'include',
-    headers: {
-      'Client-ID': TWITCH_CLIENT_ID,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({
       operationName: 'PlaybackAccessToken_Template',
       query: PLAYBACK_ACCESS_QUERY,

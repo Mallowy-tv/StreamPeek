@@ -29,6 +29,7 @@ export interface PreviewFrameInitMessage {
   sessionId: string
   channel: string
   title: string
+  authToken?: string
 }
 
 export interface PreviewFrameStopMessage {

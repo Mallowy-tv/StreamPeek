@@ -21,7 +21,8 @@ function isInitMessage(value: unknown): value is PreviewFrameInitMessage {
     candidate.type === 'streampeek:init' &&
     typeof candidate.sessionId === 'string' &&
     typeof candidate.channel === 'string' &&
-    typeof candidate.title === 'string'
+    typeof candidate.title === 'string' &&
+    (candidate.authToken === undefined || typeof candidate.authToken === 'string')
   )
 }
 
@@ -396,7 +397,9 @@ async function initializePreview(message: PreviewFrameInitMessage) {
   updateMuteState()
 
   try {
-    const source = await resolvePlaybackSource(message.channel)
+    const source = await resolvePlaybackSource(message.channel, {
+      authToken: message.authToken,
+    })
 
     if (activationToken !== requestToken) {
       return

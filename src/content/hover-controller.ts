@@ -32,6 +32,20 @@ function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum)
 }
 
+function readTwitchAuthToken(): string | undefined {
+  const authCookie = document.cookie
+    .split('; ')
+    .find((entry) => entry.startsWith('auth-token='))
+
+  if (!authCookie) {
+    return undefined
+  }
+
+  const value = authCookie.slice('auth-token='.length).trim()
+
+  return value.length > 0 ? decodeURIComponent(value) : undefined
+}
+
 function buildLoadingState(channel: string): HTMLDivElement {
   const loadingRoot = document.createElement('div')
   loadingRoot.className = 'streampeek-loading-shell'
@@ -207,6 +221,7 @@ export function createHoverController() {
     mountRenderable(
       binding,
       createPreviewPlayer({
+        authToken: readTwitchAuthToken(),
         channel: binding.card.channel,
         title: binding.card.title,
         onFatalError: () => {

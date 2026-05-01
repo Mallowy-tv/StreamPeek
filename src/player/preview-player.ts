@@ -88,21 +88,19 @@ function isReadyMessage(value: unknown): value is PreviewFrameReadyMessage {
 }
 
 window.addEventListener('message', (event) => {
-  if (
-    event.origin !== PREVIEW_FRAME_ORIGIN ||
-    !sharedFrame ||
-    event.source !== sharedFrame.iframe.contentWindow ||
-    !isReadyMessage(event.data) ||
-    event.data.sessionId !== sharedFrame.sessionId
-  ) {
+  if (event.origin !== PREVIEW_FRAME_ORIGIN || !sharedFrame || event.source !== sharedFrame.iframe.contentWindow) {
     return
   }
 
-  isFrameReady = true
-  clearLoadTimeout()
+  if (isReadyMessage(event.data) && event.data.sessionId === sharedFrame.sessionId) {
+    isFrameReady = true
+    clearLoadTimeout()
 
-  if (pendingInitMessage) {
-    postToFrame(pendingInitMessage)
+    if (pendingInitMessage) {
+      postToFrame(pendingInitMessage)
+    }
+
+    return
   }
 })
 

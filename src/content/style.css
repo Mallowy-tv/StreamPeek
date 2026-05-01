@@ -30,6 +30,96 @@
   height: 100%;
 }
 
+.streampeek-side-nav-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.streampeek-side-nav-body {
+  width: 100%;
+  height: 100%;
+}
+
+.streampeek-side-nav-body .streampeek-loading-shell,
+.streampeek-side-nav-body .streampeek-player {
+  width: 100%;
+  height: 100%;
+}
+
+.streampeek-side-nav-body .streampeek-badge {
+  display: none;
+}
+
+.streampeek-side-nav-header {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  left: 0.5rem;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: rgba(241, 245, 249, 0.16);
+  box-shadow:
+    0 10px 24px rgba(2, 6, 23, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(22px) saturate(165%);
+}
+
+.streampeek-side-nav-title-link {
+  display: block;
+  overflow: hidden;
+  padding: 0.48rem 0.7rem;
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.streampeek-side-nav-title-link:hover,
+.streampeek-side-nav-title-link:focus-visible {
+  color: #ffffff;
+  text-decoration: none;
+  outline: none;
+}
+
+.streampeek-side-nav-title-marquee {
+  display: inline-flex;
+  width: max-content;
+  min-width: 100%;
+  animation: streampeek-side-nav-marquee 12s linear infinite;
+}
+
+.streampeek-side-nav-title-copy {
+  flex: 0 0 auto;
+  padding-right: 1.5rem;
+  white-space: nowrap;
+}
+
+@keyframes streampeek-side-nav-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+body[data-streampeek-side-nav-preview='active'] [role='tooltip'],
+body[data-streampeek-side-nav-preview='active'] .tw-tooltip,
+body[data-streampeek-side-nav-preview='active'] [data-a-target*='tooltip'] {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body[data-streampeek-side-nav-preview='active'] [data-streampeek-hidden-side-nav-tooltip='true'] {
+  display: none !important;
+}
+
 .streampeek-loading-shell,
 .streampeek-player {
   position: relative;
@@ -90,6 +180,13 @@
   text-align: left;
 }
 
+.streampeek-player--notice {
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: left;
+}
+
 .streampeek-fallback-body {
   display: grid;
   gap: 0.45rem;
@@ -99,6 +196,34 @@
   border-radius: 1rem;
   background: rgba(15, 23, 42, 0.82);
   box-shadow: 0 16px 32px rgba(2, 6, 23, 0.32);
+}
+
+.streampeek-notice-body {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 20rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.82);
+  box-shadow: 0 16px 32px rgba(2, 6, 23, 0.32);
+}
+
+.streampeek-notice-title,
+.streampeek-notice-message {
+  margin: 0;
+}
+
+.streampeek-notice-title {
+  color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.streampeek-notice-message {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 
 .streampeek-fallback-title,

@@ -4,6 +4,7 @@ import type { PreviewRenderable, TwitchCardTarget } from '../shared/types'
 
 const HOVER_DELAY_MS = 350
 const LEAVE_DELAY_MS = 140
+const SIDE_NAV_LEAVE_DELAY_MS = 500
 const SIDE_NAV_PREVIEW_GAP_PX = 12
 const SIDE_NAV_PREVIEW_MAX_WIDTH_PX = 360
 const SIDE_NAV_PREVIEW_MIN_WIDTH_PX = 260
@@ -14,6 +15,7 @@ interface CardBinding {
   enterHandler: () => void
   floatingEnterHandler: (() => void) | null
   floatingLeaveHandler: (() => void) | null
+  isSideNavTooltipSuppressed: boolean
   leaveHandler: () => void
   hoverTimeoutId: number | null
   leaveTimeoutId: number | null
@@ -30,6 +32,10 @@ function clearTimer(timerId: number | null) {
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum)
+}
+
+function getLeaveDelayMs(surface: TwitchCardTarget['surface']): number {
+  return surface === 'side-nav-card' ? SIDE_NAV_LEAVE_DELAY_MS : LEAVE_DELAY_MS
 }
 
 function readTwitchAuthToken(): string | undefined {
@@ -61,6 +67,85 @@ function buildLoadingState(channel: string): HTMLDivElement {
   loadingRoot.append(badge, text)
 
   return loadingRoot
+}
+
+function buildSideNavHeader(binding: CardBinding): HTMLDivElement {
+  const title = binding.card.title.trim() || binding.card.channel
+  const header = document.createElement('div')
+  header.className = 'streampeek-side-nav-header'
+
+  const titleLink = document.createElement('a')
+  titleLink.className = 'streampeek-side-nav-title-link'
+  titleLink.href = binding.card.anchor.href
+  titleLink.setAttribute('aria-label', title)
+
+  const marquee = document.createElement('span')
+  marquee.className = 'streampeek-side-nav-title-marquee'
+  marquee.setAttribute('aria-hidden', 'true')
+
+  const firstCopy = document.createElement('span')
+  firstCopy.className = 'streampeek-side-nav-title-copy'
+  firstCopy.textContent = title
+
+  const secondCopy = document.createElement('span')
+  secondCopy.className = 'streampeek-side-nav-title-copy'
+  secondCopy.textContent = title
+
+  marquee.append(firstCopy, secondCopy)
+  titleLink.append(marquee)
+  header.append(titleLink)
+
+  return header
+}
+
+function wrapSideNavRenderable(binding: CardBinding, content: HTMLElement): HTMLDivElement {
+  const shell = document.createElement('div')
+  shell.className = 'streampeek-side-nav-shell'
+
+  const body = document.createElement('div')
+  body.className = 'streampeek-side-nav-body'
+  body.append(content)
+
+  shell.append(buildSideNavHeader(binding), body)
+
+  return shell
+}
+
+function markSideNavTooltipNodes() {
+  const tooltipBodies = document.querySelectorAll<HTMLElement>('.online-side-nav-channel-tooltip__body')
+
+  for (const tooltipBody of tooltipBodies) {
+    tooltipBody.dataset.streampeekHiddenSideNavTooltip = 'true'
+    tooltipBody.closest<HTMLElement>('.tw-balloon')?.setAttribute('data-streampeek-hidden-side-nav-tooltip', 'true')
+    tooltipBody.closest<HTMLElement>('.tw-transition')?.setAttribute('data-streampeek-hidden-side-nav-tooltip', 'true')
+    tooltipBody
+      .closest<HTMLElement>('[data-popper-placement]')
+      ?.setAttribute('data-streampeek-hidden-side-nav-tooltip', 'true')
+  }
+}
+
+function clearMarkedSideNavTooltipNodes() {
+  const hiddenNodes = document.querySelectorAll<HTMLElement>('[data-streampeek-hidden-side-nav-tooltip]')
+
+  for (const node of hiddenNodes) {
+    delete node.dataset.streampeekHiddenSideNavTooltip
+  }
+}
+
+function setSideNavTooltipSuppressed(isSuppressed: boolean, observer: MutationObserver | null) {
+  if (isSuppressed) {
+    document.body.dataset.streampeekSideNavPreview = 'active'
+    markSideNavTooltipNodes()
+    observer?.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+    return
+  }
+
+  observer?.disconnect()
+  clearMarkedSideNavTooltipNodes()
+  delete document.body.dataset.streampeekSideNavPreview
 }
 
 function updateSideNavPreviewPosition(binding: CardBinding) {
@@ -119,15 +204,15 @@ function ensureOverlayRoot(binding: CardBinding, deactivate: (binding: CardBindi
       binding.leaveTimeoutId = null
     }
 
-    binding.floatingLeaveHandler = () => {
-      clearTimer(binding.hoverTimeoutId)
-      binding.hoverTimeoutId = null
-      clearTimer(binding.leaveTimeoutId)
-      binding.leaveTimeoutId = window.setTimeout(() => {
-        binding.leaveTimeoutId = null
-        deactivate(binding)
-      }, LEAVE_DELAY_MS)
-    }
+      binding.floatingLeaveHandler = () => {
+        clearTimer(binding.hoverTimeoutId)
+        binding.hoverTimeoutId = null
+        clearTimer(binding.leaveTimeoutId)
+        binding.leaveTimeoutId = window.setTimeout(() => {
+          binding.leaveTimeoutId = null
+          deactivate(binding)
+        }, getLeaveDelayMs(binding.card.surface))
+      }
 
     overlayRoot.addEventListener('mouseenter', binding.floatingEnterHandler)
     overlayRoot.addEventListener('mouseleave', binding.floatingLeaveHandler)
@@ -146,14 +231,31 @@ function ensureOverlayRoot(binding: CardBinding, deactivate: (binding: CardBindi
 export function createHoverController() {
   const bindings = new Map<HTMLAnchorElement, CardBinding>()
   let activeBinding: CardBinding | null = null
+  let sideNavTooltipSuppressionCount = 0
+  const sideNavTooltipObserver = new MutationObserver(() => {
+    markSideNavTooltipNodes()
+  })
+
+  const syncSideNavTooltipSuppression = () => {
+    setSideNavTooltipSuppressed(sideNavTooltipSuppressionCount > 0, sideNavTooltipObserver)
+  }
+
+  const setBindingSideNavTooltipSuppressed = (binding: CardBinding, isSuppressed: boolean) => {
+    if (binding.card.surface !== 'side-nav-card' || binding.isSideNavTooltipSuppressed === isSuppressed) {
+      return
+    }
+
+    binding.isSideNavTooltipSuppressed = isSuppressed
+    sideNavTooltipSuppressionCount += isSuppressed ? 1 : -1
+    syncSideNavTooltipSuppression()
+  }
 
   const clearRenderable = (binding: CardBinding) => {
     binding.renderable?.dispose()
     binding.renderable = null
   }
 
-  const resetOverlay = (binding: CardBinding) => {
-    clearRenderable(binding)
+  const cleanupOverlayDom = (binding: CardBinding) => {
     binding.card.anchor.dataset.streampeekActive = 'false'
     binding.card.anchor.classList.remove('streampeek-preview-anchor')
 
@@ -169,6 +271,12 @@ export function createHoverController() {
     binding.overlayRoot = null
     binding.floatingEnterHandler = null
     binding.floatingLeaveHandler = null
+    setBindingSideNavTooltipSuppressed(binding, false)
+  }
+
+  const resetOverlay = (binding: CardBinding) => {
+    clearRenderable(binding)
+    cleanupOverlayDom(binding)
   }
 
   const deactivate = (binding: CardBinding) => {
@@ -188,7 +296,11 @@ export function createHoverController() {
   const mountRenderable = (binding: CardBinding, renderable: PreviewRenderable) => {
     const overlayRoot = ensureOverlayRoot(binding, deactivate)
     updateSideNavPreviewPosition(binding)
-    overlayRoot.replaceChildren(renderable.element)
+    overlayRoot.replaceChildren(
+      binding.card.surface === 'side-nav-card'
+        ? wrapSideNavRenderable(binding, renderable.element)
+        : renderable.element,
+    )
     binding.renderable = renderable
   }
 
@@ -246,6 +358,7 @@ export function createHoverController() {
       enterHandler: () => {
         clearTimer(binding.leaveTimeoutId)
         binding.leaveTimeoutId = null
+        setBindingSideNavTooltipSuppressed(binding, true)
 
         if (activeBinding === binding) {
           return
@@ -260,6 +373,7 @@ export function createHoverController() {
       floatingEnterHandler: null,
       floatingLeaveHandler: null,
       hoverTimeoutId: null,
+      isSideNavTooltipSuppressed: false,
       leaveHandler: () => {
         clearTimer(binding.hoverTimeoutId)
         binding.hoverTimeoutId = null
@@ -268,7 +382,7 @@ export function createHoverController() {
         binding.leaveTimeoutId = window.setTimeout(() => {
           binding.leaveTimeoutId = null
           deactivate(binding)
-        }, LEAVE_DELAY_MS)
+        }, getLeaveDelayMs(binding.card.surface))
       },
       leaveTimeoutId: null,
       overlayRoot: null,
@@ -318,6 +432,9 @@ export function createHoverController() {
     destroy: () => {
       window.removeEventListener('resize', syncActiveOverlayPosition)
       window.removeEventListener('scroll', syncActiveOverlayPosition, true)
+      sideNavTooltipObserver.disconnect()
+      clearMarkedSideNavTooltipNodes()
+      delete document.body.dataset.streampeekSideNavPreview
 
       for (const binding of bindings.values()) {
         cardCleanup(binding)

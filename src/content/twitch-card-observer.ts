@@ -14,11 +14,29 @@ interface ObserveTwitchCardsOptions {
 function extractChannel(href: string): string | null {
   const trimmed = href.trim()
 
-  if (!trimmed.startsWith('/')) {
+  if (trimmed.length === 0) {
     return null
   }
 
-  const channel = trimmed.slice(1).split('/')[0]
+  let url: URL
+
+  try {
+    url = new URL(trimmed, 'https://www.twitch.tv')
+  } catch {
+    return null
+  }
+
+  if (url.origin !== 'https://www.twitch.tv') {
+    return null
+  }
+
+  const segments = url.pathname.split('/').filter((segment) => segment.length > 0)
+
+  if (segments.length !== 1) {
+    return null
+  }
+
+  const [channel] = segments
 
   return channel.length > 0 ? channel : null
 }

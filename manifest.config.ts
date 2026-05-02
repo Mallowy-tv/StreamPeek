@@ -4,7 +4,7 @@ export default defineManifest({
   manifest_version: 3,
   name: 'StreamPeek',
   description: 'Hover Twitch live cards to watch muted stream previews with quick audio controls.',
-  version: '0.0.1',
+  version: '1.0.0',
   action: {
     default_icon: {
       '16': 'icons/icon-16.png',

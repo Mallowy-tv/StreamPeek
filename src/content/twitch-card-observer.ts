@@ -1,10 +1,12 @@
 import type { TwitchCardTarget, TwitchHoverSurface } from '../shared/types'
 
 const DIRECTORY_CARD_SELECTOR = 'a[data-a-target="preview-card-image-link"][href^="/"]'
+const SEARCH_RESULT_CARD_SELECTOR = 'div[data-a-target="search-result-live-channel"] > a[href^="/"]'
+const RELATED_SEARCH_CARD_SELECTOR = '.search-result-related-live-channels__row-container article a[href^="/"]'
 const EXPANDED_SIDE_NAV_CARD_SELECTOR = 'a.side-nav-card__link[href^="/"]'
 const COLLAPSED_SIDE_NAV_CARD_SELECTOR = 'a.side-nav-card.tw-link[href^="/"]'
 const SIDE_NAV_CARD_SELECTOR = `${EXPANDED_SIDE_NAV_CARD_SELECTOR}, ${COLLAPSED_SIDE_NAV_CARD_SELECTOR}`
-const CARD_SELECTOR = `${DIRECTORY_CARD_SELECTOR}, ${SIDE_NAV_CARD_SELECTOR}`
+const CARD_SELECTOR = `${DIRECTORY_CARD_SELECTOR}, ${SEARCH_RESULT_CARD_SELECTOR}, ${RELATED_SEARCH_CARD_SELECTOR}, ${SIDE_NAV_CARD_SELECTOR}`
 
 interface ObserveTwitchCardsOptions {
   onCardFound: (card: TwitchCardTarget) => void
@@ -42,7 +44,11 @@ function extractChannel(href: string): string | null {
 }
 
 function detectSurface(anchor: HTMLAnchorElement): TwitchHoverSurface | null {
-  if (anchor.matches(DIRECTORY_CARD_SELECTOR)) {
+  if (
+    anchor.matches(DIRECTORY_CARD_SELECTOR) ||
+    anchor.matches(SEARCH_RESULT_CARD_SELECTOR) ||
+    anchor.matches(RELATED_SEARCH_CARD_SELECTOR)
+  ) {
     return 'directory-card'
   }
 
@@ -81,6 +87,14 @@ function isLiveSideNavCard(anchor: HTMLAnchorElement): boolean {
   return anchor.matches(COLLAPSED_SIDE_NAV_CARD_SELECTOR)
 }
 
+function isRelatedSearchCard(anchor: HTMLAnchorElement): boolean {
+  return (
+    anchor.matches(RELATED_SEARCH_CARD_SELECTOR) &&
+    anchor.querySelector('img[alt]') !== null &&
+    anchor.querySelector('.tw-channel-status-text-indicator') !== null
+  )
+}
+
 export function observeTwitchCards(options: ObserveTwitchCardsOptions): () => void {
   const trackedCards = new Map<HTMLAnchorElement, TwitchCardTarget>()
   let animationFrameId = 0
@@ -99,6 +113,10 @@ export function observeTwitchCards(options: ObserveTwitchCardsOptions): () => vo
       }
 
       if (surface === 'side-nav-card' && !isLiveSideNavCard(anchor)) {
+        continue
+      }
+
+      if (surface === 'directory-card' && anchor.matches(RELATED_SEARCH_CARD_SELECTOR) && !isRelatedSearchCard(anchor)) {
         continue
       }
 

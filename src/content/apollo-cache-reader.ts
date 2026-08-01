@@ -21,9 +21,16 @@ interface FiberNode {
   type: unknown
 }
 
+// Every cached entity is a normalized GraphQL object whose field shape
+// varies per query, so field values are read defensively (see the
+// getString/getNumber/getEntity/getArray helpers below) rather than typed
+// precisely — there's no schema available to type this against.
+type CacheEntity = Record<string, unknown>
+type NormalizedCache = Record<string, CacheEntity>
+
 interface ApolloLikeClient {
   cache: {
-    extract: () => Record<string, any>
+    extract: () => NormalizedCache
   }
 }
 
@@ -134,13 +141,41 @@ function findApolloClient(): ApolloLikeClient | null {
   return client
 }
 
-// Resolves an Apollo normalized-cache `{ __ref: "Type:id" }` pointer.
-function resolveRef(cache: Record<string, any>, value: unknown): Record<string, any> | null {
-  if (value && typeof value === 'object' && '__ref' in (value as Record<string, unknown>)) {
-    return cache[(value as { __ref: string }).__ref] ?? null
+function isCacheRef(value: unknown): value is { __ref: string } {
+  return typeof value === 'object' && value !== null && typeof (value as { __ref?: unknown }).__ref === 'string'
+}
+
+// Resolves an Apollo normalized-cache `{ __ref: "Type:id" }` pointer, or
+// passes through an already-inline entity (some fields, like `roles` in the
+// data seen live, are embedded directly rather than normalized by ref).
+function resolveRef(cache: NormalizedCache, value: unknown): CacheEntity | null {
+  if (isCacheRef(value)) {
+    return cache[value.__ref] ?? null
   }
 
-  return (value as Record<string, any>) ?? null
+  return typeof value === 'object' && value !== null ? (value as CacheEntity) : null
+}
+
+function getString(entity: CacheEntity | null, key: string): string | null {
+  const value = entity?.[key]
+
+  return typeof value === 'string' ? value : null
+}
+
+function getNumber(entity: CacheEntity | null, key: string): number | null {
+  const value = entity?.[key]
+
+  return typeof value === 'number' ? value : null
+}
+
+function getEntity(cache: NormalizedCache, entity: CacheEntity | null, key: string): CacheEntity | null {
+  return resolveRef(cache, entity?.[key])
+}
+
+function getArray(entity: CacheEntity | null, key: string): unknown[] {
+  const value = entity?.[key]
+
+  return Array.isArray(value) ? value : []
 }
 
 function formatViewerCount(count: number): string {
@@ -179,42 +214,47 @@ export function readCostreamDataFromCache(channelLogin: string): StreamCostreamD
       return false
     }
 
-    const login = cache[key]?.login
+    const login = getString(cache[key], 'login')
 
-    return typeof login === 'string' && login.toLowerCase() === needle
+    return login !== null && login.toLowerCase() === needle
   })
 
   if (!userKey) {
     return null
   }
 
-  const stream = resolveRef(cache, cache[userKey].stream)
-  const details = stream?.costreamDetails
+  const stream = getEntity(cache, cache[userKey], 'stream')
+  const details = getEntity(cache, stream, 'costreamDetails')
 
   if (!details) {
     return null
   }
 
-  const coStreamers: TwitchCoStreamer[] = (details.topCostreamers ?? [])
-    .map((ref: unknown) => resolveRef(cache, ref))
-    .filter((costreamer: Record<string, any> | null): costreamer is Record<string, any> => {
-      return costreamer !== null && costreamer.login?.toLowerCase() !== needle
+  const coStreamers: TwitchCoStreamer[] = getArray(details, 'topCostreamers')
+    .map((ref) => resolveRef(cache, ref))
+    .filter((costreamer): costreamer is CacheEntity => {
+      const login = getString(costreamer, 'login')
+
+      return login !== null && login.toLowerCase() !== needle
     })
-    .map((costreamer: Record<string, any>) => {
-      const theirStream = resolveRef(cache, costreamer.stream)
-      const theirViewerCount = theirStream?.viewersCount
+    .map((costreamer) => {
+      const theirStream = getEntity(cache, costreamer, 'stream')
+      const theirViewerCount = getNumber(theirStream, 'viewersCount')
+      const login = getString(costreamer, 'login') ?? ''
 
       return {
-        channel: costreamer.login,
-        displayName: costreamer.displayName ?? costreamer.login,
-        avatarUrl: costreamer['profileImageURL({"width":70})'] ?? null,
-        viewerCount: typeof theirViewerCount === 'number' ? formatViewerCount(theirViewerCount) : null,
+        channel: login,
+        displayName: getString(costreamer, 'displayName') ?? login,
+        avatarUrl: getString(costreamer, 'profileImageURL({"width":70})'),
+        viewerCount: theirViewerCount !== null ? formatViewerCount(theirViewerCount) : null,
       }
     })
 
+  const totalViewersCount = getNumber(details, 'totalViewersCount')
+
   return {
-    costreamersCount: details.costreamersCount ?? coStreamers.length,
-    totalViewersCount: typeof details.totalViewersCount === 'number' ? formatViewerCount(details.totalViewersCount) : null,
+    costreamersCount: getNumber(details, 'costreamersCount') ?? coStreamers.length,
+    totalViewersCount: totalViewersCount !== null ? formatViewerCount(totalViewersCount) : null,
     coStreamers,
   }
 }

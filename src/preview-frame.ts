@@ -6,6 +6,7 @@ import {
   type PreviewAudioState,
   type PreviewFrameInitMessage,
   type PreviewFrameMessage,
+  type PreviewFrameNavigateMessage,
   type PreviewFrameReadyMessage,
   type PreviewFrameStopMessage,
 } from './shared/types'
@@ -22,7 +23,8 @@ function isInitMessage(value: unknown): value is PreviewFrameInitMessage {
     typeof candidate.sessionId === 'string' &&
     typeof candidate.channel === 'string' &&
     typeof candidate.title === 'string' &&
-    (candidate.authToken === undefined || typeof candidate.authToken === 'string')
+    (candidate.authToken === undefined || typeof candidate.authToken === 'string') &&
+    (candidate.enableClickToPause === undefined || typeof candidate.enableClickToPause === 'boolean')
   )
 }
 
@@ -114,6 +116,7 @@ const parentOrigin = document.referrer ? new URL(document.referrer).origin : 'ht
 const DEFAULT_UNMUTED_VOLUME = 0.35
 
 let playerTitle = 'Live preview'
+let enableClickToPause = true
 let hls: Hls | null = null
 let audioState: PreviewAudioState = {
   muted: true,
@@ -356,6 +359,16 @@ shell.addEventListener('click', (event) => {
     return
   }
 
+  if (!enableClickToPause) {
+    const navigateMessage: PreviewFrameNavigateMessage = {
+      type: 'streampeek:navigate',
+      sessionId: expectedSessionId,
+    }
+
+    window.parent.postMessage(navigateMessage, parentOrigin)
+    return
+  }
+
   togglePlayback()
 })
 
@@ -379,6 +392,7 @@ async function initializePreview(message: PreviewFrameInitMessage) {
   cleanupPlayer()
   activationToken = requestToken
   playerTitle = message.title
+  enableClickToPause = message.enableClickToPause ?? true
   video.setAttribute('aria-label', `Live preview for ${message.title}`)
   resetPresentation()
   applyAudioState(await loadStoredAudioState())

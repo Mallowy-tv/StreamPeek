@@ -1,7 +1,6 @@
 import type { PlaybackSource } from '../shared/types'
 
-const FALLBACK_TWITCH_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko'
-const TWITCH_CLIENT_ID = import.meta.env.VITE_TWITCH_CLIENT_ID ?? FALLBACK_TWITCH_CLIENT_ID
+const TWITCH_CLIENT_ID = import.meta.env.VITE_TWITCH_CLIENT_ID;
 const PLAYBACK_ACCESS_QUERY = `
   query PlaybackAccessToken_Template(
     $login: String!

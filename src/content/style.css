@@ -1,9 +1,3 @@
-.streampeek-preview-anchor {
-  position: relative !important;
-  overflow: hidden;
-  background: #000;
-}
-
 .streampeek-hover-root {
   position: absolute;
   inset: 0;
@@ -13,98 +7,329 @@
 }
 
 .streampeek-hover-root--side-nav {
+  /* Color tokens copied from the reference MiniPlayerCard design (oklch, Chrome-only extension). */
+  --streampeek-card: oklch(0.19 0.018 285);
+  --streampeek-card-foreground: oklch(0.98 0.002 285);
+  --streampeek-muted-foreground: oklch(0.68 0.02 285);
+  --streampeek-border: oklch(0.26 0.02 285);
+  --streampeek-secondary: oklch(0.24 0.02 285);
+  --streampeek-live: oklch(0.66 0.24 25);
+
   position: fixed;
   inset: auto;
   z-index: 9999;
   overflow: hidden;
-  border-radius: 0.9rem;
-  background: #000;
-  box-shadow:
-    0 22px 44px rgba(2, 6, 23, 0.42),
-    0 0 0 1px rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--streampeek-border);
+  border-radius: 1rem;
+  background: var(--streampeek-card);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
 }
 
-.streampeek-hover-root--side-nav .streampeek-loading-shell,
-.streampeek-hover-root--side-nav .streampeek-player {
+.streampeek-hover-root--side-nav > .streampeek-loading-shell {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 16 / 9;
 }
 
 .streampeek-side-nav-shell {
   position: relative;
   width: 100%;
-  height: 100%;
 }
 
-.streampeek-side-nav-body {
+.streampeek-side-nav-video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.streampeek-side-nav-video .streampeek-player {
   width: 100%;
   height: 100%;
 }
 
-.streampeek-side-nav-body .streampeek-loading-shell,
-.streampeek-side-nav-body .streampeek-player {
-  width: 100%;
-  height: 100%;
-}
-
-.streampeek-side-nav-body .streampeek-badge {
+.streampeek-side-nav-video .streampeek-badge {
   display: none;
 }
 
-.streampeek-side-nav-header {
+.streampeek-side-nav-viewer-pill {
   position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: 3;
-  overflow: hidden;
-  border-radius: 0.9rem 0.9rem 0 0;
-  background: rgba(148, 163, 184, 0.18);
-  box-shadow:
-    0 10px 24px rgba(2, 6, 23, 0.14),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(22px) saturate(165%);
-}
-
-.streampeek-side-nav-title-link {
-  display: block;
-  overflow: hidden;
-  padding: 0.68rem 0.9rem 0.74rem;
-  color: #f8fafc;
-  font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.streampeek-side-nav-title-link:hover,
-.streampeek-side-nav-title-link:focus-visible {
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
   color: #ffffff;
-  text-decoration: none;
-  outline: none;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
-.streampeek-side-nav-title-marquee {
-  display: inline-block;
-  width: max-content;
-  padding-left: 100%;
-  animation: streampeek-side-nav-marquee 12s linear infinite;
+.streampeek-side-nav-icon {
+  display: flex;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: inherit;
 }
 
-.streampeek-side-nav-title-copy {
+.streampeek-side-nav-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.streampeek-side-nav-footer {
+  display: flex;
+  flex-direction: column;
+  background: var(--streampeek-card);
+}
+
+.streampeek-side-nav-footer-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.15rem;
+}
+
+.streampeek-side-nav-footer-avatar {
+  flex: 0 0 auto;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.streampeek-side-nav-footer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.streampeek-side-nav-title {
+  overflow: hidden;
+  min-width: 0;
+  color: var(--streampeek-card-foreground);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.streampeek-side-nav-title-track {
   display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
 }
 
-@keyframes streampeek-side-nav-marquee {
-  from {
+.streampeek-side-nav-title--marquee .streampeek-side-nav-title-track {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  animation-name: streampeek-side-nav-title-marquee;
+  /* Set per-instance from JS (buildPreviewTitle) so scroll speed stays
+     constant regardless of title length; 10s is just a sane fallback. */
+  animation-duration: var(--streampeek-marquee-duration, 10s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-delay: 1s;
+}
+
+.streampeek-side-nav-title-gap {
+  display: inline-block;
+  width: 3.5rem;
+}
+
+@keyframes streampeek-side-nav-title-marquee {
+  0% {
     transform: translateX(0);
   }
 
-  to {
-    transform: translateX(-100%);
+  62% {
+    transform: translateX(-50%);
   }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.streampeek-side-nav-footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  color: var(--streampeek-muted-foreground);
+  font-size: 1.05rem;
+}
+
+.streampeek-side-nav-footer-name {
+  overflow: hidden;
+  flex: 0 1 auto;
+  color: color-mix(in oklch, var(--streampeek-card-foreground) 80%, transparent);
+  font-weight: 500;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.streampeek-side-nav-footer-name:hover,
+.streampeek-side-nav-footer-name:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.streampeek-side-nav-footer-dot {
+  flex: 0 0 auto;
+  color: color-mix(in oklch, var(--streampeek-muted-foreground) 50%, transparent);
+}
+
+.streampeek-side-nav-footer-category {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.streampeek-side-nav-live-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: var(--streampeek-live);
+}
+
+.streampeek-side-nav-costream {
+  border-top: 1px solid var(--streampeek-border);
+}
+
+.streampeek-side-nav-costream-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.streampeek-side-nav-costream-toggle:hover,
+.streampeek-side-nav-costream-toggle:focus-visible {
+  background: var(--streampeek-secondary);
+  outline: none;
+}
+
+.streampeek-side-nav-costream-avatars {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.streampeek-side-nav-costream-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid var(--streampeek-card);
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.streampeek-side-nav-costream-avatar + .streampeek-side-nav-costream-avatar {
+  margin-left: -0.7rem;
+}
+
+.streampeek-side-nav-costream-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--streampeek-muted-foreground);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.streampeek-side-nav-costream-count {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--streampeek-muted-foreground);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.streampeek-side-nav-costream-chevron {
+  display: flex;
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 1.2rem;
+  transition: transform 160ms ease;
+}
+
+.streampeek-side-nav-costream-chevron svg {
+  width: 100%;
+  height: 100%;
+}
+
+.streampeek-side-nav-costream[data-expanded='true'] .streampeek-side-nav-costream-chevron {
+  transform: rotate(180deg);
+}
+
+.streampeek-side-nav-costream-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--streampeek-border);
+  padding: 0.6rem;
+}
+
+.streampeek-side-nav-costream-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem;
+  border-radius: 0.55rem;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.streampeek-side-nav-costream-row:hover,
+.streampeek-side-nav-costream-row:focus-visible {
+  background: var(--streampeek-secondary);
+  outline: none;
+}
+
+.streampeek-side-nav-costream-row-avatar {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.streampeek-side-nav-costream-row-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--streampeek-card-foreground);
+  font-size: 1rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.streampeek-side-nav-costream-row-viewers {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--streampeek-muted-foreground);
+  font-size: 0.9rem;
 }
 
 body[data-streampeek-side-nav-preview='active'] [role='tooltip'],
@@ -116,7 +341,68 @@ body[data-streampeek-side-nav-preview='active'] [data-a-target*='tooltip'] {
 }
 
 body[data-streampeek-side-nav-preview='active'] [data-streampeek-hidden-side-nav-tooltip='true'] {
-  display: none !important;
+  /* visibility (not display:none) so Twitch's own tooltip still lays out and
+     finishes populating (e.g. the Guest Star roster we scrape) instead of
+     bailing out early because it thinks it's not visible/intersecting. */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Directory/category grid declutter — the native (non-hover) grid page, not
+   the hover preview. See src/content/directory-grid-declutter.ts. Elements
+   there are hidden via inline `!important` styles directly, not a shared
+   class, since a class-based stylesheet rule can lose to a conflicting
+   inline style Twitch applies to a specific element. */
+
+.streampeek-directory-viewer-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.45rem;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.streampeek-directory-viewer-badge .streampeek-side-nav-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* Grid column sizing for directory/shelf card grids is applied via inline
+   JS styles (see findGridContainers/applyGridStyling in
+   directory-grid-declutter.ts), not a stylesheet rule — those grids aren't
+   reliably reachable by a fixed class name like `.tw-tower` alone (the front
+   page has several differently-named shelf variants), so the containers are
+   found structurally instead and styled directly with inline `!important`,
+   which beats any class-based rule regardless of Twitch's own CSS load
+   order. */
+
+/* Kill Twitch's native hover zoom/scale on grid card thumbnails — now that we
+   pop out our own floating preview on hover, the card growing/shifting
+   underneath it at the same time just looks like double animation. Cancels
+   the transform outright rather than fighting the :hover trigger itself
+   (pointer-events tricks don't stop :hover from applying to an ancestor when
+   a descendant is still hit-testable, which our own anchor needs to remain).
+   `tw-hover-accent-effect` is a confirmed real class; ScTransformWrapper is
+   matched by prefix since its hash suffix rotates on Twitch's deploys. */
+/* Not scoped to any specific grid container — `.tw-hover-accent-effect` is a
+   stable class seen on every card type (directory cards, front-page shelves,
+   category tiles alike), so matching it globally is both simpler and safer
+   than trying to keep this in sync with wherever findGridContainers() finds
+   a grid. */
+.tw-hover-accent-effect,
+[class*='ScTransformWrapper'] {
+  transform: none !important;
 }
 
 .streampeek-loading-shell,

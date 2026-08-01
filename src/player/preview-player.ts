@@ -1,5 +1,6 @@
 import type {
   PreviewFrameInitMessage,
+  PreviewFrameNavigateMessage,
   PreviewFrameParentMessage,
   PreviewFrameReadyMessage,
   PreviewFrameStopMessage,
@@ -10,7 +11,10 @@ interface CreatePreviewPlayerOptions {
   authToken?: string
   channel: string
   title: string
+  /** Defaults to true. Set false to have clicks request navigation via onNavigate instead of pausing. */
+  enableClickToPause?: boolean
   onFatalError: () => void
+  onNavigate?: () => void
 }
 
 interface SharedPreviewFrame {
@@ -27,6 +31,7 @@ let isFrameReady = false
 let loadTimeoutId: number | null = null
 let pendingInitMessage: PreviewFrameInitMessage | null = null
 let fatalErrorHandler: (() => void) | null = null
+let navigateHandler: (() => void) | null = null
 
 function postToFrame(message: PreviewFrameInitMessage | PreviewFrameStopMessage) {
   sharedFrame?.iframe.contentWindow?.postMessage(message, '*')
@@ -43,6 +48,7 @@ function resetSharedFrame() {
   clearLoadTimeout()
   pendingInitMessage = null
   fatalErrorHandler = null
+  navigateHandler = null
   isFrameReady = false
   sharedFrame?.root.remove()
   sharedFrame?.parkingHost.remove()
@@ -87,6 +93,16 @@ function isReadyMessage(value: unknown): value is PreviewFrameReadyMessage {
   return candidate.type === 'streampeek:ready' && typeof candidate.sessionId === 'string'
 }
 
+function isNavigateMessage(value: unknown): value is PreviewFrameNavigateMessage {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  const candidate = value as Partial<PreviewFrameParentMessage>
+
+  return candidate.type === 'streampeek:navigate' && typeof candidate.sessionId === 'string'
+}
+
 window.addEventListener('message', (event) => {
   if (event.origin !== PREVIEW_FRAME_ORIGIN || !sharedFrame || event.source !== sharedFrame.iframe.contentWindow) {
     return
@@ -101,6 +117,10 @@ window.addEventListener('message', (event) => {
     }
 
     return
+  }
+
+  if (isNavigateMessage(event.data) && event.data.sessionId === sharedFrame.sessionId) {
+    navigateHandler?.()
   }
 })
 
@@ -148,6 +168,7 @@ export function createPreviewPlayer(options: CreatePreviewPlayerOptions): Previe
   const frame = ensureSharedFrame()
 
   fatalErrorHandler = options.onFatalError
+  navigateHandler = options.onNavigate ?? null
   frame.iframe.setAttribute('aria-label', `${options.channel} preview`)
 
   const message: PreviewFrameInitMessage = {
@@ -156,6 +177,7 @@ export function createPreviewPlayer(options: CreatePreviewPlayerOptions): Previe
     authToken: options.authToken,
     channel: options.channel,
     title: options.title,
+    enableClickToPause: options.enableClickToPause,
   }
 
   pendingInitMessage = message
@@ -173,6 +195,7 @@ export function createPreviewPlayer(options: CreatePreviewPlayerOptions): Previe
 
       pendingInitMessage = null
       fatalErrorHandler = null
+      navigateHandler = null
       frame.parkingHost.append(frame.root)
 
       if (isFrameReady) {
